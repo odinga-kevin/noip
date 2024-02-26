@@ -2,7 +2,7 @@
 
 # The API supports the following actions:
 
-- Checking the state of your active noip hostnames and confirming those expiring in 7 days. You can create a cron script to confirm expiring hostnames automatically
+- Checking the state of your active noip hostnames and confirming those expiring in 7 days. You can create a cron script to confirm expiring hostnames after every 23 days.
 - Adding new hostnames
 - Deleting a hostname, and
 - Updating a hostname
