@@ -17,7 +17,7 @@
 # Usage
 
 Initialize client
-```
+```python
 from noip_api import noIP
 noip = noIP(email, password) 
 ```
@@ -28,13 +28,13 @@ You can then access noip attributes
 Retrieves active noip hostnames and updates those expiring in 7 days
 
 Example:
-```
+```python
 noip.checkMyHostnames()
 ```
 ## addNewHostname
 
 Creates the given hostname in the given domain using one of the 4 record types: ipv4 (A), ipv6 (AAA), cname, and web redirect. The default domain and record type are 'ddns.net' and 'ipv4', respectively.
-```
+```python
 Takes the following arguments:
 hostname: A prefix of a domain name e.g. 'api' without 'ddns.net'.
 
@@ -69,7 +69,7 @@ Server response is printed if hostname creation fails e.g. when the provided hos
 Deletes the given hostname from your noip account. Prints error message if deletion fails e.g. the provided hostname is not in your account.
 
 Example:
-```
+```python
 noip.deleteHostname('example.ddns.net')
 ```
 ## updateHostname
@@ -79,7 +79,7 @@ Updates the given hostname with the given ip addresses. If no ip address is give
 Currently supports hostnames with record types 'ipv4(A) and 'ipv6'(AAAA) only.
 
 Examples:
-```
+```python
 noip.updateHostname('example.ddns.net') #updates the given 'hostname' with current system ip address
 
 noip.updateHostname('example.ddns.net', ipv4='123.67.6.8') #updates the given 'hostname' with the given ipv4 address
