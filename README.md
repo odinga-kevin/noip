@@ -1,28 +1,37 @@
 # Unofficial python api wrapper for [noip.com](https://www.noip.com/) targeting users with free accounts. Everything is included in a single Python file, making integration into your project effortless.
 
 # The API supports the following actions:
+
 - Checking the state of your active noip hostnames and confirming those expiring in 7 days. You can create a cron script to confirm expiring hostnames automatically
 - Adding new hostnames
 - Deleting a hostname, and
 - Updating a hostname
 
 # Dependecies
+
 - requests
 - sys
 - re
 - ipaddress
 
 # Usage
+
 \*Initialize client
+
 noip = noIP(email, password) 
 
-You can then access noip attributes:
+You can then access noip attributes
+
 ## checkMyHostnames
+
 Retrieves active noip hostnames and updates those expiring in 7 days
-Example: 
+
+Example:
+
 noip.checkMyHostnames()
 
 ## addNewHostname
+
 Creates the given hostname in the given domain using one of the 4 record types: ipv4 (A), ipv6 (AAA), cname, and web redirect. The default domain and record type are 'ddns.net' and 'ipv4', respectively.
             
             Takes the following arguments:
@@ -55,15 +64,24 @@ Creates the given hostname in the given domain using one of the 4 record types: 
             Server response is printed if hostname creation fails e.g. when the provided hostname already exists.
 
 ## deleteHostname
+
 Deletes the given hostname from your noip account. Prints error message if deletion fails e.g. the provided hostname is not in your account.
+
 Example:
+
 noip.deleteHostname('example.ddns.net')
 
 ## updateHostname
+
 Updates the given hostname with the given ip addresses. If no ip address is given, the current ip will be used.
+
 Currently supports hostnames with record types 'ipv4(A) and 'ipv6'(AAAA) only.
+
 Examples:
+
 noip.updateHostname('example.ddns.net') #updates the given 'hostname' with current system ip address
+
 noip.updateHostname('example.ddns.net', ipv4='123.67.6.8') #updates the given 'hostname' with the given ipv4 address
+
 noip.updateHostname('example.ddns.net', ipv6='2001:0db8:85a3:0000:0000:8a2e:0370:7334') #updates the given 'hostname' with the given ipv6 address
 
