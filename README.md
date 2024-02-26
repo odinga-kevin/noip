@@ -17,9 +17,9 @@
 # Usage
 
 \*Initialize client
-
+```
 noip = noIP(email, password) 
-
+```
 You can then access noip attributes
 
 ## checkMyHostnames
