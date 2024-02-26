@@ -16,8 +16,9 @@
 
 # Usage
 
-\*Initialize client
+Initialize client
 ```
+from noip_api import noIP
 noip = noIP(email, password) 
 ```
 You can then access noip attributes
