@@ -2,6 +2,16 @@ import requests
 import sys
 import re
 import ipaddress
+import os
+import pickle
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
+import base64
+from datetime
+import time
+from slugify import slugify
 
 class noIP:
     '''
@@ -11,11 +21,34 @@ class noIP:
         Usage example: noip = noIP(your-no-ip-email, your-password)
     '''
     def __init__(self, email, password):
+        self.cookie_file = 'no_ip_cookie.pkl'
         self.session = requests.Session()
         headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'}
         self.session.headers.update(headers)
-        self.token = self.login(email, password)
 
+        if os.path.exists(self.cookie_file):
+            self.cookies = self.load_cookies()
+            self.session.cookies.update(self.cookies)
+        
+        response = self.session.get('https://my.noip.com/')
+        
+        if 'login' in response.url:
+            print('Session expired, signing in...')
+            csrfToken = re.search(r'"csrf-token" content="(.*?)"', response.text).group(1)
+            self.token = self.login(email, password, csrfToken)
+            self.save_cookies()
+        else:
+            self.token = re.search(r'name="token" content="(.*?)"', response.text).group(1)
+            self.save_cookies()
+
+    def save_cookies(self):
+        with open(self.cookie_file, 'wb') as f:
+            pickle.dump(self.session.cookies, f)
+            
+    def load_cookies(self):
+        with open(self.cookie_file, 'rb') as f:
+            return pickle.load(f)
+    
     def getLoginToken(self):
         '''
             Returns a csrf token used to log in
@@ -43,6 +76,68 @@ class noIP:
         
         html = self.session.post('https://www.noip.com/login', headers=headers, data=data)
         
+        if 'verify' in html.url:
+            print('Verification required...')
+            print('Waiting for verification code...')
+            csrfToken = re.search(r'"csrf-token" content="(.*?)"', html.text).group(1)
+            def extract_integers_from_string(s):
+                result = []
+                temp = ''
+                for char in s:
+                    if char.isdigit():
+                        temp += char
+                    elif temp:
+                        result.append(int(temp))
+                        temp = ''
+                if temp:
+                    result.append(int(temp))
+                return result
+            
+            time.sleep(20)
+            
+            date_5_days_ago = (datetime.datetime.utcnow() - datetime.timedelta(days=5)).date()
+            query = f'after:{date_5_days_ago} No-IP'
+            
+            gmail = gMail()
+            
+            codeReceived = False
+            challenge_code = None
+            trial_limit = 10
+            trials = 0
+            
+            while not codeReceived and trials < trial_limit:
+                emails = gmail.get_emails(query)
+                if emails:
+                    for email in emails:
+                        try:
+                            if time.time() - email['date'] < 90 and slugify('Verification Code') in slugify(email['subject']):
+                                challenge_code = extract_integers_from_string(email['subject'])[0]
+                                codeReceived = True
+                                break
+                        except:
+                            continue
+                
+                trials += 1
+                if not codeReceived:
+                    time.sleep(10)
+                
+            
+            if not challenge_code:
+                raise Exception('Error getting verification code')
+            
+            
+            data = {
+                'type': 'email_pin',
+                'challenge_code': int(challenge_code),
+                'trust_device': 1,
+                'submit': 'Verify',
+                '_token': csrfToken,
+            }
+            
+            headers = {'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'}
+            
+            html = self.session.post('https://www.noip.com/2fa/verify', headers=headers, data=data)
+            
         if 'login' not in html.url:
             print("Login successful...")
             token = re.search(r'name="token" content="(.*?)"', html.text).group(1)
@@ -354,4 +449,72 @@ class noIP:
         except Exception as e:
             print(f"Error: {e}")
         
+class gMail:
+    def __init__(self):
+        self.token_cache_path = 'gmail_token.pickle'
+        self.credentials_json_path = 'gmail_credentials.json'
+    
+    def get_service(self):
+        creds = None
+        # The file self.token_cache_path stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first
+        # time.
+        if os.path.exists(self.token_cache_path):
+            with open(self.token_cache_path, 'rb') as token:
+                creds = pickle.load(token)
+        # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    self.credentials_json_path, SCOPES)
+                creds = flow.run_local_server(port=0)
+            # Save the credentials for the next run
+            with open(self.token_cache_path, 'wb') as token:
+                pickle.dump(creds, token)
 
+        service = build('gmail', 'v1', credentials=creds)
+        return service
+
+    def get_emails(self, query):
+        service = self.get_service()
+        results = service.users().messages().list(userId='me', q=query).execute()
+        messages = results.get('messages', [])
+        emails = []
+
+        if not messages:
+            print('No messages found.')
+        else:
+            for message in messages:
+                msg = service.users().messages().get(userId='me', id=message['id']).execute()
+                payload = msg['payload']
+                headers = payload.get('headers', [])
+                
+                # Find the sender's email address
+                sender = None
+                subject = None
+                received_date = None
+                for header in headers:
+                    if header['name'] == 'From':
+                        sender = header['value']
+                    if header['name'] == 'Subject':
+                        subject = header['value']
+                    if header['name'] == 'Date':
+                        date_format = '%a, %d %b %Y %H:%M:%S %z (%Z)'
+                        date_object = datetime.datetime.strptime(header['value'], date_format)
+                        received_date = date_object.timestamp()
+
+                # Extract the message body
+                body = ""
+                if 'data' in payload['body']:
+                    body = base64.urlsafe_b64decode(payload['body']['data']).decode('utf-8')
+                else:
+                    parts = payload.get('parts', [])
+                    for part in parts:
+                        if 'data' in part['body']:
+                            body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
+                            break
+
+                emails.append({'sender': sender, 'subject': subject, 'date': received_date, 'body': body})
+        return emails
