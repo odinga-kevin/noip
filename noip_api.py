@@ -48,23 +48,13 @@ class noIP:
     def load_cookies(self):
         with open(self.cookie_file, 'rb') as f:
             return pickle.load(f)
-    
-    def getLoginToken(self):
-        '''
-            Returns a csrf token used to log in
-        '''
-        url = "https://www.noip.com/login"
-        html = self.session.get(url).text
 
-        csrfToken = re.search(r'"csrf-token" content="(.*?)"', html).group(1)
-        return csrfToken
-
-    def login(self, email, password):
+    def login(self, email, password, csrfToken):
         '''
             Logs in and returns 'X-CSRF-TOKEN' for subsequent requests
         '''
         data = {
-            '_token': self.getLoginToken(),
+            '_token': csrfToken,
             'username': email,
             'password': password,
             'submit_login_page': '1',
