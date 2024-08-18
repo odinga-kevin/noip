@@ -18,7 +18,7 @@
 # Email verification
  - Sometimes NO-IP sends verification code to registered email during login flow
  - The API can handle this automatically when using Gmail
- - Set Up Google Cloud Project and Enable Gmail API with OAuth consent screen set to External user type and your gmail added to the list of testers (search how to or ask Chat GPT) then replace 'self.credentials_json_path' without the path to your own credentials json file.
+ - Set Up Google Cloud Project and Enable Gmail API with OAuth consent screen set to 'External' user type; application type set to 'Desktop app'; and your gmail account added to the list of testers (search how to or ask Chat GPT) then replace 'self.credentials_json_path' with the path to your own credentials json file that you downloaded when creating 'OAuth 2.0 Credentials'
 
 # Usage
 
