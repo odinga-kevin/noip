@@ -441,6 +441,7 @@ class noIP:
         
 class gMail:
     def __init__(self):
+        self.SCOPES = ['https://mail.google.com/']
         self.token_cache_path = 'gmail_token.pickle'
         self.credentials_json_path = 'gmail_credentials.json'
     
@@ -458,7 +459,7 @@ class gMail:
                 creds.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    self.credentials_json_path, SCOPES)
+                    self.credentials_json_path, self.SCOPES)
                 creds = flow.run_local_server(port=0)
             # Save the credentials for the next run
             with open(self.token_cache_path, 'wb') as token:
