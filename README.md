@@ -1,4 +1,4 @@
-# Unofficial python api wrapper for [noip.com](https://www.noip.com/) targeting users with free accounts. Everything is included in a single Python file, making integration into your project effortless.
+# Unofficial Python3 api wrapper for [noip.com](https://www.noip.com/) targeting users with free accounts. Everything is included in a single Python file, making integration into your project effortless.
 
 # The API supports the following actions:
 
@@ -8,11 +8,17 @@
 - Updating a hostname
 
 # Dependecies
+- python-slugify
+- google-auth
+- google-auth-oauthlib
+- google-auth-httplib2
+- google-api-python-client
+- # Install all with: pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client python-slugify
 
-- requests
-- sys
-- re
-- ipaddress
+# Email verification
+ - Sometimes NO-IP sends verification code to registered email during login flow
+ - The API can handle this automatically when using Gmail
+ - Set Up Google Cloud Project and Enable Gmail API with OAuth consent screen set to External user type and your gmail added to the list of testers (search how to or ask Chat GPT) then replace 'self.credentials_json_path' without the path to your own credentials json file.
 
 # Usage
 
