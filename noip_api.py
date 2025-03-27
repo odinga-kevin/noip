@@ -147,7 +147,7 @@ class noIP:
             hostID = name['id']
             if daysRemaining <= 7:
                 print(f"Confirming '{hostName}', {daysRemaining} days remaining...")
-                res = self.session.get(f'https://my.noip.com/api/host/{hostID}/touch', headers=headers).json()
+                res = self.session.get(f'https://my.noip.com/ajax/host/{hostID}/touch', headers=headers).json()
                 if not res['success']:
                     raise Exception(f"{hostName} Confirmation failed...\n {res}")
                 else:
